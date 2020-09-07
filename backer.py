@@ -2,14 +2,22 @@ import sys, os, shutil
 from datetime import datetime
 
 def backup(file):
-    [file_name, file_type] = os.path.splitext(f"{file}")
-    backup_dir = create_backup_dir(file_name)
+    # Get the path name of the file (without the extension)
+    file_path_name = os.path.splitext(file)[0]
+    # Create the backup directory
+    backup_dir = create_backup_dir(file_path_name)
 
+    # Create the backup file
     backup_file = copy_file(file, backup_dir)
+    # Get formatted time for backup name
     date_time = datetime.now().strftime('%d-%m-%Y %H.%M.%S')
-    new_backup_file = os.path.join(backup_dir, f"{file_name} - Backup ({date_time}){file_type}")
+    # Get pure (without path) file name and type extension
+    [file_name, file_type] = os.path.basename(file).split(".")
+    # Create new name for the backup file
+    new_backup_file = os.path.join(backup_dir, f"{file_name} - Backup ({date_time}).{file_type}")
 
     try:
+        # Rename copied backup file to new name
         os.rename(backup_file, new_backup_file)
     except OSError as err:
         print(f"Backup file could not be renamed!")
@@ -22,7 +30,13 @@ def backup(file):
         
 
 def copy_file(file, dir):
+    r"""
+        Copies a provided [file] to the 
+        specified directory [dir] and
+        returns the file copy
+    """
     try:
+        # Copy file to new directory
         shutil.copy(file, dir)
     except OSError as err:
         print(f"File could not be copied!")
@@ -31,9 +45,14 @@ def copy_file(file, dir):
     else:
         print("File was copied!")
         print("====================")
-        return os.path.join(dir, file)
+        # Return the file copy
+        return os.path.join(dir, os.path.basename(file))
 
 def create_backup_dir(path_name):
+    r"""
+        Creates backup directory
+        based on a provided [path_name]
+    """
     path = path_name + " - Backup"
 
     #Check if the backup directory already exists
@@ -43,6 +62,7 @@ def create_backup_dir(path_name):
         return path
 
     try:
+        # Create the new directory
         os.mkdir(path)
     except OSError as err:
         print(f"Creation of the backup directory {path} failed!")
@@ -59,11 +79,11 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         raise ValueError("Invalid number of arguments provided!")
 
-    backup_file = sys.argv[1]
+    file = sys.argv[1]
     # Check if the provided file name is a file
-    if not os.path.isfile(f"./{backup_file}"):
+    if not os.path.isfile(file):
         raise ValueError("No file with the provided name was found in the directory!")
 
-    backup(backup_file)
+    backup(file)
 
         
